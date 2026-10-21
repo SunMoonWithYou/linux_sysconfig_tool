@@ -1461,10 +1461,11 @@ show_action_log() {
 # 主菜单顶部系统摘要
 show_summary() {
     local ip ssh_ports
-    ip=$(get_local_ip)
-    # 读取 sshd_config 中显式配置的端口
+    ip=$(get_local_ip || true)
+    # 读取 sshd_config 中显式配置的端口（grep 无匹配会返回非零，必须 || true，
+    # 否则配合 set -e -o pipefail 会导致主菜单直接退出）
     ssh_ports=$(grep -E "^[[:space:]]*Port[[:space:]]+" /etc/ssh/sshd_config 2>/dev/null \
-                | awk '{print $2}' | sort -u | tr '\n' ' ')
+                | awk '{print $2}' | sort -u | tr '\n' ' ' || true)
     echo -e "${CYAN}----------------------------------------${NC}"
     echo -e " 时间   : $(date '+%Y-%m-%d %H:%M:%S %Z')"
     echo -e " 主机   : $(hostname)  IP: ${ip:-N/A}"
